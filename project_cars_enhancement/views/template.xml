@@ -1,0 +1,232 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+<template id="website_sale_products" name="template_name" inherit_id="website_sale.products">
+    <xpath expr="//t[@t-if='category']" position="after">
+        <div id="product_category" class="row" style="margin-left: 10px !important;">
+            <div class="row button-category">
+                <t t-foreach="request.env['product.public.category'].search([('parent_id','=',False)])" t-as="cat" t-if="not category">
+                    <a class="btn btn-link" id="category_btn" t-att-href="keep('/shop/category/%s' % slug(cat), category=0)" t-field="cat.name"/>
+                </t>
+                <t t-foreach="request.env['product.public.category'].search([('parent_id','=',category.id)])" t-as="cat" t-if="category">
+                    <a class="btn btn-link" id="category_btn"  t-att-href="keep('/shop/category/%s' % slug(cat), category=0)" t-field="cat.name"/>
+                </t>
+            </div>
+        </div>
+    </xpath>
+</template>
+
+<template id="product_price_inherited" name="product_price" inherit_id="website_sale.product_price">
+    <xpath expr="//div[hasclass('product_price')]" position="inside">
+        <p class="p_default_code"><strong>Product Code :</strong> <span class="default_code" t-esc="combination_info['default_code']"/></p>
+    </xpath>
+
+</template>
+
+
+<template id="variants_inherited" name="template_name" inherit_id="sale.variants">
+    <xpath expr="//ul/t" position="replace">
+        <t t-set="is_msg_display" t-value="True"/>
+        <t t-foreach="product.valid_product_template_attribute_line_ids" t-as="ptal">
+            <li t-att-data-attribute_id="ptal.attribute_id.id"
+                    t-att-data-attribute_name="ptal.attribute_id.name"
+                    t-attf-class="variant_attribute #{'d-none' if len(ptal.product_template_value_ids._only_active()) == 0 and not ptal.product_template_value_ids._only_active()[0].is_custom else ''}">
+
+                    <!-- Used to customize layout if the only available attribute value is custom -->
+                    <t t-set="single" t-value="len(ptal.product_template_value_ids._only_active()) == 0"/>
+                    <t t-set="single_and_custom" t-value="single and ptal.product_template_value_ids._only_active()[0].is_custom" />                     
+                    <!-- <t t-if="ptal.attribute_id.attribute_visibility == 'visible' "> -->
+                        <t t-set="is_msg_display" t-value="False"/>
+                        <strong t-field="ptal.attribute_id.name"  t-attf-class="{{ptal.attribute_id.attribute_visibility != 'visible' and 'o_hidden' or 'attribute_name'}}"/>
+                        <t t-if="ptal.attribute_id.display_type == 'select'" >
+                            <div t-attf-class="{{ ptal.attribute_id.attribute_visibility != 'visible' and 'o_hidden' or ''}}">
+                            <select
+                                t-att-data-attribute_id="ptal.attribute_id.id"
+                                t-attf-class="custom-select css_attribute_select js_variant_change #{ptal.attribute_id.create_variant} #{'d-none' if single_and_custom else ''}"
+                                t-att-name="'ptal-%s' % ptal.id">
+                                <t t-foreach="ptal.product_template_value_ids._only_active()" t-as="ptav">
+                                    <option t-att-value="ptav.id"
+                                        t-att-data-value_id="ptav.id"
+                                        t-att-data-value_name="ptav.name"
+                                        t-att-data-attribute_name="ptav.attribute_id.name"
+                                        t-att-data-is_custom="ptav.is_custom"
+                                        t-att-selected="ptav in combination"
+                                        t-att-data-is_single="single"
+                                        t-att-data-is_single_and_custom="single_and_custom">
+                                        <span t-field="ptav.name"/>
+                                        <t t-call="sale.badge_extra_price"/>
+                                    </option>
+                                </t>
+                            </select>
+                            </div>
+                        </t>
+
+                        <t t-if="ptal.attribute_id.display_type == 'radio'">
+                            <div t-attf-class="{{ ptal.attribute_id.attribute_visibility != 'visible' and 'o_hidden' or ''}}">
+                            <ul t-att-data-attribute_id="ptal.attribute_id.id" t-attf-class="list-inline list-unstyled #{'d-none' if single_and_custom else ''}">
+                                <t t-foreach="ptal.product_template_value_ids._only_active()" t-as="ptav">
+                                    <li class="list-inline-item form-group js_attribute_value" style="margin: 0;">
+                                        <label class="col-form-label">
+                                            <div class="custom-control custom-radio">
+                                                <input type="radio"
+                                                    t-attf-class="custom-control-input js_variant_change #{ptal.attribute_id.create_variant}"
+                                                    t-att-checked="ptav in combination"
+                                                    t-att-name="'ptal-%s' % ptal.id"
+                                                    t-att-value="ptav.id"
+                                                    t-att-data-value_id="ptav.id"
+                                                    t-att-data-value_name="ptav.name"
+                                                    t-att-data-attribute_name="ptav.attribute_id.name"
+                                                    t-att-data-is_custom="ptav.is_custom"
+                                                    t-att-data-is_single="single"
+                                                    t-att-data-is_single_and_custom="single_and_custom" />
+                                                <div class="radio_input_value custom-control-label">
+                                                    <span t-field="ptav.name"/>
+                                                    <t t-call="sale.badge_extra_price"/>
+                                                </div>
+                                            </div>
+                                        </label>
+                                    </li>
+                                </t>
+                            </ul>
+                            </div>
+                        </t>
+
+                        <t t-if="ptal.attribute_id.display_type == 'pills'">
+                            <div t-attf-class="{{ ptal.attribute_id.attribute_visibility != 'visible' and 'o_hidden' or ''}}">
+                            <ul t-att-data-attribute_id="ptal.attribute_id.id"
+                                t-attf-class="btn-group-toggle list-inline list-unstyled #{'d-none' if single_and_custom else ''}"
+                                data-toggle="buttons">
+                                <t t-foreach="ptal.product_template_value_ids._only_active()" t-as="ptav">
+                                    <li t-attf-class="o_variant_pills btn btn-primary mb-1 list-inline-item js_attribute_value #{'active' if ptav in combination else ''}">
+                                        <input type="radio"
+                                            t-attf-class="js_variant_change #{ptal.attribute_id.create_variant}"
+                                            t-att-checked="ptav in combination"
+                                            t-att-name="'ptal-%s' % ptal.id"
+                                            t-att-value="ptav.id"
+                                            t-att-data-value_id="ptav.id"
+                                            t-att-id="ptav.id"
+                                            t-att-data-value_name="ptav.name"
+                                            t-att-data-attribute_name="ptav.attribute_id.name"
+                                            t-att-data-is_custom="ptav.is_custom"
+                                            t-att-data-is_single_and_custom="single_and_custom"
+                                            t-att-autocomplete="off"/>
+                                        <div class="radio_input_value o_variant_pills_input_value">
+                                            <span t-field="ptav.name"/>
+                                            <t t-call="sale.badge_extra_price"/>
+                                        </div>
+                                    </li>
+                                </t>
+                            </ul>
+                            </div>
+                        </t>
+
+                        <t t-if="ptal.attribute_id.display_type == 'color'">
+                            <div t-attf-class="{{ ptal.attribute_id.attribute_visibility != 'visible' and 'o_hidden' or ''}}">
+                            <ul t-att-data-attribute_id="ptal.attribute_id.id" t-attf-class="list-inline  #{'d-none' if single_and_custom else ''}">
+                                <li t-foreach="ptal.product_template_value_ids._only_active()" t-as="ptav" class="list-inline-item mr-1">
+                                    <label t-attf-style="background-color:#{ptav.html_color or ptav.product_attribute_value_id.name if not ptav.is_custom else ''}"
+                                        t-attf-class="css_attribute_color #{'active' if ptav in combination else ''} #{'custom_value' if ptav.is_custom else ''}">
+                                        <input type="radio"
+                                            t-attf-class="js_variant_change  #{ptal.attribute_id.create_variant}"
+                                            t-att-checked="ptav in combination"
+                                            t-att-name="'ptal-%s' % ptal.id"
+                                            t-att-value="ptav.id"
+                                            t-att-title="ptav.name"
+                                            t-att-data-value_id="ptav.id"
+                                            t-att-data-value_name="ptav.name"
+                                            t-att-data-attribute_name="ptav.attribute_id.name"
+                                            t-att-data-is_custom="ptav.is_custom"
+                                            t-att-data-is_single="single"
+                                            t-att-data-is_single_and_custom="single_and_custom"/>
+                                    </label>
+                                </li>
+                            </ul>
+                        </div>
+                        </t>
+                    <!-- </t> -->
+              
+            </li>
+        </t>
+      <!--   <t t-if="is_msg_display == True">
+           <p  class="alert alert-warning">This combination does not exist.</p>
+        </t> -->
+    </xpath>
+</template>
+<!-- <template id="website_sale_product_inherited" name="template_name" inherit_id="website_sale.product">
+    <xpath expr="//p[hasclass('css_not_available_msg')]" position="replace">
+        <p t-if="False" class="css_not_available_msg alert alert-warning">This combination does not exist.</p>
+    </xpath>
+</template>
+ -->
+<template id="product_inherited" name="product" inherit_id="website_sale.product">
+    <xpath expr="//div[@id='product_details']/p" position="replace">
+        <p  t-raw="product.description_sale" class="text-muted my-2" placeholder="A short description that will also appear on documents."/>
+    </xpath>
+    <xpath expr="//div[@id='product_details']" position="after">
+        
+        <div id="kit_div" t-attf-class="mrp_bom_details row {{ combination_info['mrp_bom'] and 'diplay' or 'o_hidden'}}" style="width: 100% !important; max-height: 250px !important; overflow-y: scroll;"> 
+            <h4 class="bg-600" style=" font-size: 18px;padding: 4px 6px;">Product Kit Information</h4> 
+            <div id="save_price" style="margin-left: 15px !important;margin: 5px;    color: rgb(255, 0, 255);">   
+                <span id="save_price" style="font-weight: bolder;
+                animation-duration: 3s !important;
+                animation-delay: 2s !important;
+                animation-name: o_anim_bounce_in_down;
+                animation-play-state: running;
+                visibility: visible;" class="o_animated_text o_animate o_animate_both_scroll o_anim_bounce_in_down o_visible o_animated save_price" > <span  t-esc="combination_info['save_price']"/> </span>
+            </div>
+            <table id="kit_table" class="table table-sm o_main_table" >
+                <thead>
+                    <tr>
+                        <td><strong>Component</strong></td>
+                        <td><strong>Quantity</strong></td>
+                        <td><strong>Unit of Measure</strong></td>
+                        <td><strong>Price</strong></td>
+                        <td><strong>Total</strong></td>
+                    </tr>
+                </thead>
+                <tbody t-if="combination_info['mrp_bom']" id="kit_table_ebody">
+                    <t t-foreach="combination_info['mrp_bom'].bom_line_ids" t-as="bom_line_id">
+                        <tr>
+                            <t t-set="total" t-value="bom_line_id.product_qty * bom_line_id.product_id.list_price"/>
+                            <td><span t-esc="bom_line_id.product_id.name"/></td>
+                            <td><span t-esc="bom_line_id.product_qty"/></td>
+                            <td><span t-esc="bom_line_id.product_uom_id.name"/></td>
+                            <td><span t-esc="bom_line_id.product_id.list_price"/></td>
+                            <td><span t-esc="total"/></td>
+                        </tr>
+                    </t>
+
+                </tbody>
+                <tbody  t-else="" id="kit_table_ebody">
+                </tbody>
+                <tfoot t-attf-class=" {{ combination_info['mrp_bom'] and 'diplay' or 'o_hidden'}}"  id="kit_table_tfoot">
+                    <td colspan="4"><strong>Final Total</strong></td>
+                    <td id="final_total"><strong><span t-esc="combination_info['final_total']"/></strong></td>
+                </tfoot>
+            </table>
+        </div>
+    </xpath>
+
+</template>
+                           
+
+
+<template id="product_wishlist_inherited" name="Cart Description" inherit_id="website_sale_wishlist.product_wishlist">
+    <xpath expr="//small[hasclass('d-md-block')]" position="replace">
+        <small class="d-none d-md-block"><p t-raw="wish.product_id.description_sale" class="text-muted"/></small>
+    </xpath>
+</template>
+
+<template id="cart_line_description_following_lines_inherited" name="Cart Description" inherit_id="website_sale.cart_line_description_following_lines">
+    <xpath expr="//span" position="replace">
+        <span><t t-raw="name_line"/></span>
+    </xpath>
+</template>
+
+<template id="one_hybrid_inherited" name="one_hybrid" inherit_id="website.one_hybrid">
+    <xpath expr="//div[hasclass('o_search_result_item')]//p[@t-if='description']" position="replace">
+        <p t-if="description" class="mb-0 o_hidden" t-raw="description"/>
+    </xpath>
+</template>
+
+
+</odoo>

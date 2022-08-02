@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Product Tags -->
+        <record id="product_tag_form_view" model="ir.ui.view">
+        <field name="name">product.tags.form</field>
+        <field name="model">product.tags</field>
+        <field name="arch" type="xml">
+            <form string="Product Tag">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="name"/>
+                         <!--    <field name="text_color" widget="color_picker" />
+                            <field name="bg_color" widget="color_picker"/> -->
+                        </group>
+                        <group>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+    <record id="product_tags_tree_view" model="ir.ui.view">
+        <field name="name">product.tags.tree</field>
+        <field name="model">product.tags</field>
+        <field name="arch" type="xml">
+            <tree string="Product Tags">
+                <field name="name"/>
+              <!--   <field name="text_color" widget="color_picker" />
+                <field name="bg_color" widget="color_picker"/> -->
+            </tree>
+        </field>
+    </record>
+    <record id="product_tags_action" model="ir.actions.act_window">
+        <field name="name">Product Tags</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">product.tags</field>
+        <field name="view_mode">tree,form</field>
+        <field name="view_id" eval="False"/>
+        <field name="help" type="html">
+          <p class="o_view_nocontent_smiling_face">
+            Define a new tag
+          </p><p>
+            Tags are used to search product for a given theme.
+          </p>
+        </field>
+    </record>
+
+
+
+
+    <record model="ir.ui.view" id="product_template_form_view">
+        <field name="name">product.product.product.website.form</field>
+        <field name="model">product.product</field>
+        <field name="inherit_id" ref="product.product_normal_form_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='barcode']" position="after">
+                    <field name="product_tags_ids"  widget="many2many_tags"/>
+            </xpath>
+        </field>
+    </record>
+
+    <menuitem id="menu_product_tag"
+        action="product_tags_action"
+        parent="website_sale.menu_product_settings" sequence="1"/>
+      
+
+</odoo>

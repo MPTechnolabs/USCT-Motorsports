@@ -1,0 +1,14 @@
+
+
+.product_tag{
+    border: 1px;
+    border-radius: 30px;
+    margin: 5px;
+    padding: 10px 20px;
+
+	@for $counter from 10 to 0 {
+        background: rgba(pink, $counter);
+    }
+  
+}
+	

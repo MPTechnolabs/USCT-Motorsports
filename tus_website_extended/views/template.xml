@@ -1,0 +1,304 @@
+<?xml version='1.0' encoding='utf-8'?>
+<odoo> 
+    <template id="products_attributes" inherit_id="website_sale.products_attributes" active="True" customize_show="True" name="Attributes &amp; Variants filters Custom">
+      <xpath expr="//ul[hasclass('flex-column')]" position="replace">
+        <ul class="nav flex-column dev">
+            <t t-set="all_value_ids" t-value="products and products.mapped('attribute_line_ids') and products.mapped('attribute_line_ids').mapped('value_ids') or False"/>
+                        <t t-foreach="attributes" t-as="a"> 
+                          <t t-set="value_ids" t-value="a.value_ids if a.show_all_attribute_values else a.value_ids and all_value_ids and a.value_ids.filtered(lambda x:x.id in all_value_ids.ids) or False"/>
+                            <li t-if="value_ids and len(value_ids) &gt; 1" class="nav-item mb-2">
+                                <div>
+                                    <strong t-field="a.name" class="o_products_attributes_title text-uppercase d-block my-2"/>
+                                </div>
+                                <t t-if="a.display_type == 'select'">  
+                                    <select class="custom-select css_attribute_select" name="attrib">
+                                        <option value="" />
+                                        <t t-foreach="value_ids" t-as="v">
+                                            <option t-att-value="'%s-%s' % (a.id,v.id)" t-esc="v.name" t-att-selected="v.id in attrib_set" />
+                                        </t>
+                                    </select>
+                                </t>
+                                <t t-if="a.display_type == 'radio' or a.display_type == 'pills'">
+                                    <div class="flex-column">
+                                        <t t-foreach="value_ids" t-as="v">
+                                            <div class="custom-control custom-checkbox mb-1">
+                                                <input type="checkbox" name="attrib" class="custom-control-input" t-att-id="'%s-%s' % (a.id,v.id)" t-att-value="'%s-%s' % (a.id,v.id)" t-att-checked="'checked' if v.id in attrib_set else None"/>
+                                                <label class="custom-control-label font-weight-normal" t-att-for="'%s-%s' % (a.id,v.id)" t-field="v.name"/>
+                                            </div>
+                                        </t>
+                                    </div>
+                                </t>
+                                <t t-if="a.display_type == 'color'">
+                                    <t t-foreach="value_ids" t-as="v">
+                                        <label t-attf-style="background-color:#{v.html_color or v.name}" t-attf-class="css_attribute_color #{'active' if v.id in attrib_set else ''}">
+                                            <input type="checkbox" name="attrib" t-att-value="'%s-%s' % (a.id,v.id)" t-att-checked="'checked' if v.id in attrib_set else None" t-att-title="v.name" />
+                                        </label>
+                                    </t>
+                                </t>
+                            </li>
+                        </t>
+                    </ul>
+          </xpath>
+    </template>
+    <template id="product_inhierted" inherit_id="website_sale.product" name="product">
+        <xpath expr="//section[@id='product_detail']" position="after">
+            <section class="s_call_to_action o_colored_level pb0 pt16 o_cc o_cc3 bg-black-15" data-oe-shape-data="{&quot;shape&quot;:&quot;web_editor/Origins/18&quot;,&quot;flip&quot;:[]}" data-snippet="s_call_to_action" style="position: relative; background-image: none;" data-original-title="" title="" aria-describedby="tooltip202248" id="Call-to-Action" data-anchor="true"><div class="o_we_shape o_web_editor_Origins_18"/>
+                <div class="container">
+                <div class="row">
+                    <div class="pt16 o_colored_level col-lg-4">
+                        <p style="text-align: center" data-original-title="" title="" aria-describedby="tooltip60015">
+                            <a class="mb-2 btn btn-primary btn-lg 1122" href="https://www.brocksupply.com/1334-4130B" data-original-title="" title="" target="_blank">View Fitment</a>
+                        <br/></p>
+                    </div>
+                    <div class="o_colored_level pt16 col-lg-4">
+                      <p style="text-align: center" data-original-title="" title="" aria-describedby="tooltip60015">
+                          <a class="mb-2 btn btn-primary btn-lg" href="/shop" data-original-title="" title="">Return To Shopping</a>
+                      
+                      </p>
+                    </div>
+                    <div class="o_colored_level col-lg-4 pt16">
+                        <form action="/get_more_product_information">
+                          <p style="text-align: center" data-original-title="" title="" aria-describedby="tooltip60015">
+                            
+
+                              <input type="hidden" name="product_id" id="product_id" t-att-value="product_variant"/>
+                              <input type="hidden" name="product_name" id="product_name" t-att-value="product_variant.name"/>
+                              <input type="hidden" name="return_url" id="return_url" t-att-value="product.website_url"/>
+                              <button name="info_about_product" class="mb-2 btn btn-primary btn-lg" data-original-title="" title="" target="_blank" aria-describedby="popover215095">Get Product Info</button>
+                              
+                          <br/></p>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </section>
+        </xpath>
+    </template>
+
+    <template id="get_more_product_information_page"  name="Get More Product Information">
+      <t t-call="website.layout">
+        <t t-set="logged_partner" t-value="request.env['website.visitor']._get_visitor_from_request().partner_id"/>
+        <t t-set="contactus_form_values" t-value="{                 'email_to': res_company.email,                 'name': request.params.get('name', ''),                 'phone': request.params.get('phone', ''),                 'email_from': request.params.get('email_from', ''),                 'company': request.params.get('company', ''),                 'subject': request.params.get('subject', ''),             }"/>
+        <span class="hidden" data-for="contactus_form" t-att-data-values="contactus_form_values"/>
+        <div id="wrap" class="oe_structure oe_empty">
+         <!--  <section class="s_title parallax s_parallax_is_fixed bg-black-50 o_colored_level pb256 pt88" data-vcss="001" data-snippet="s_title" data-scroll-background-ratio="1" data-name="Title" style="background-image: none;">
+            <span class="s_parallax_bg oe_img_bg o_bg_img_center" style="background-image: url(&quot;/unsplash/jy0qz8kSWac/chevy pickup.jpg?unique=8d1e2e18&quot;); background-position: 50% 0px;"/>
+            <div class="o_we_bg_filter bg-black-50"/>
+            <div class="container">
+              <h1>Get More Product Info</h1>
+              <h1 style="text-align: right;">Place an Order</h1>
+            </div>
+          </section> -->
+          <div class="s_popup o_snippet_invisible" data-vcss="001" data-snippet="s_popup" data-name="Popup" id="sPopup1643190434622" data-invisible="1">
+            <div class="modal fade s_popup_middle modal_shown" style="display: none; background-color: var(--black-50)  !important;" data-show-after="5000" data-display="afterDelay" data-consents-duration="7" data-focus="false" data-backdrop="false" tabindex="-1" role="dialog" aria-hidden="true">
+              <div class="modal-dialog d-flex">
+                <div class="modal-content oe_structure">
+                  <div class="s_popup_close js_close_popup o_we_no_overlay o_not_editable text-o-color-2" aria-label="Close">×</div>
+                  <section class="s_banner pt96 pb96 o_colored_level oe_img_bg o_bg_img_center" data-snippet="s_banner" style="background-image: url(&quot;/unsplash/nLrLv4IK_Yk/truck%20show.jpg?unique=ded94e25&quot;);">
+                    <div class="container">
+                      <div class="row s_nb_column_fixed">
+                        <div class="col-lg-10 offset-lg-1 text-center o_cc o_cc1 jumbotron pt48 pb48 o_colored_level" data-original-title="" title="" aria-describedby="tooltip96732">
+                          <h2>
+                            <font style="font-size: 62px;">Sales Events<br/></font>
+                          </h2>
+                          <p class="lead">Visit us at our next sales event and save!<br/></p>
+                          <a href="/events" class="mb-2 btn btn-primary" data-original-title="" title="">View Our Events Calendar</a>
+                        </div>
+                      </div>
+                    </div>
+                  </section>
+                </div>
+              </div>
+            </div>
+          </div>
+          <section class="s_text_block pt40 pb40 o_colored_level" data-snippet="s_text_block" data-name="Text" style="background-image: none;" data-original-title="" title="" aria-describedby="tooltip496408">
+            <div class="s_allow_columns container">
+              <div class="row">
+                <div class="col-lg-8 mt-4 mt-lg-0 o_colored_level" style="">
+                  <p>
+                    <br/>
+                  </p>
+                  <section class="s_website_form" data-vcss="001" data-snippet="s_website_form" data-name="Form">
+                    <div class="container">
+                      <form id="contactus_form3" action="/website/form/" method="post" enctype="multipart/form-data" class="o_mark_required" data-mark="*" data-model_name="mail.mail" data-success-mode="redirect" data-success-page="/contactus-thank-you" data-pre-fill="true">
+                        <div class="s_website_form_rows row s_col_no_bgcolor">
+                          <div class="form-group col-12 s_website_form_field s_website_form_custom s_website_form_required" data-type="char" data-name="Field" data-visibility-condition="" data-visibility-between="">
+                            <div class="row s_col_no_resize s_col_no_bgcolor">
+                              <label class="col-form-label col-sm-auto s_website_form_label" style="width: 200px" for="contact1">
+                                <span class="s_website_form_label_content">Your Name</span>
+                                <span class="s_website_form_mark"> *</span>
+                              </label>
+                              <div class="col-sm">
+                                <input id="contact1" type="text" class="form-control s_website_form_input" name="name" required="" data-fill-with="name"/>
+                              </div>
+                            </div>
+                          </div>
+                          <div class="form-group col-12 s_website_form_field s_website_form_custom" data-type="char" data-name="Field">
+                            <div class="row s_col_no_resize s_col_no_bgcolor">
+                              <label class="col-form-label col-sm-auto s_website_form_label" style="width: 200px" for="contact2">
+                                <span class="s_website_form_label_content">Phone Number</span>
+                              </label>
+                              <div class="col-sm">
+                                <input id="contact2" type="tel" class="form-control s_website_form_input" name="phone" data-fill-with="phone"/>
+                              </div>
+                            </div>
+                          </div>
+                          <div class="form-group col-12 s_website_form_field s_website_form_required" data-type="email" data-name="Field">
+                            <div class="row s_col_no_resize s_col_no_bgcolor">
+                              <label class="col-form-label col-sm-auto s_website_form_label" style="width: 200px" for="contact3">
+                                <span class="s_website_form_label_content">Your Email</span>
+                                <span class="s_website_form_mark"> *</span>
+                              </label>
+                              <div class="col-sm">
+                                <input id="contact3" type="email" class="form-control s_website_form_input" name="email_from" required="" data-fill-with="email"/>
+                              </div>
+                            </div>
+                          </div>
+                          <div class="form-group col-12 s_website_form_field s_website_form_custom" data-type="char" data-name="Field">
+                            <div class="row s_col_no_resize s_col_no_bgcolor">
+                              <label class="col-form-label col-sm-auto s_website_form_label" style="width: 200px" for="contact4">
+                                <span class="s_website_form_label_content">Your Company</span>
+                              </label>
+                              <div class="col-sm">
+                                <input id="contact4" type="text" class="form-control s_website_form_input" name="company" data-fill-with="commercial_company_name"/>
+                              </div>
+                            </div>
+                          </div>
+                          
+                          <div class="form-group col-12 s_website_form_field s_website_form_custom" data-type="char" data-name="Field">
+                            <div class="row s_col_no_resize s_col_no_bgcolor">
+                              <label class="col-form-label col-sm-auto s_website_form_label" style="width: 200px" for="contact4_product">
+                                <span class="s_website_form_label_content">Product</span>
+                              </label>
+                              <div class="col-sm">
+                                <input id="contact4_product" type="text" class="form-control s_website_form_input" t-att-value="product_name" name="product_name" data-fill-with="commercial_product_name"/>
+                            </div>
+                             <div class="col-sm">
+                                <t t-if="return_url">
+                                    
+                                    <a name="Return to Product" class="mt16" t-att-href="return_url">
+                                         <button type="button" role="button" class="btn btn-primary ml-auto" title="Return to Product">Return to Product
+                                        </button>
+                            
+                                    </a> 
+                                </t>
+                                
+                              </div>
+                            </div>
+                          </div>
+                          
+                          
+                          <div class="form-group col-12 s_website_form_field s_website_form_required" data-type="char" data-name="Field">
+                            <div class="row s_col_no_resize s_col_no_bgcolor">
+                              <label class="col-form-label col-sm-auto s_website_form_label" style="width: 200px" for="contact5">
+                                <span class="s_website_form_label_content">Subject</span>
+                                <span class="s_website_form_mark"> *</span>
+                              </label>
+                              <div class="col-sm">
+                                <input id="contact5" type="text" class="form-control s_website_form_input" name="subject" required=""/>
+                              </div>
+                            </div>
+                          </div>
+                          <div data-visibility-condition="" data-visibility-between="" class="form-group s_website_form_field col-12 s_website_form_custom s_website_form_required" data-type="one2many" data-name="Field">
+                            <div class="row s_col_no_resize s_col_no_bgcolor">
+                              <label class=" col-sm-auto s_website_form_label " style="width: 200px" for="otr1j52vzjqc">
+                                <span class="s_website_form_label_content">Help us get you a quick reply-</span>
+                              </label>
+                              <div class="col-sm">
+                                <div class="row s_col_no_resize s_col_no_bgcolor s_website_form_multiple" data-name="Help us get you a quick reply-" data-display="horizontal">
+                                  <div class="checkbox col-12 col-lg-4 col-md-6">
+                                    <div class="form-check">
+                                      <input type="checkbox" class="s_website_form_input form-check-input" id="otr1j52vzjqc0" name="Help us get you a quick reply-" value="Info about a part on our website" required="1"/>
+                                      <label class="form-check-label s_website_form_check_label" for="otr1j52vzjqc0">
+                                          Info about a part on our website
+                                      </label>
+                                    </div>
+                                  </div>
+                                  <div class="checkbox col-12 col-lg-4 col-md-6">
+                                    <div class="form-check">
+                                      <input type="checkbox" class="s_website_form_input form-check-input" id="otr1j52vzjqc1" name="Help us get you a quick reply-" value="Special Order a part" required="1"/>
+                                      <label class="form-check-label s_website_form_check_label" for="otr1j52vzjqc1">
+                                          Special Order a part
+                                      </label>
+                                    </div>
+                                  </div>
+                                  <div class="checkbox col-12 col-lg-4 col-md-6">
+                                    <div class="form-check">
+                                      <input type="checkbox" class="s_website_form_input form-check-input" id="otr1j52vzjqc2" name="Help us get you a quick reply-" value="Can I pick up my order?" required="1"/>
+                                      <label class="form-check-label s_website_form_check_label" for="otr1j52vzjqc2">
+                                          Can I pick up my order?
+                                      </label>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                          <div data-visibility-condition="" data-visibility-between="" data-type="text" data-name="Field" class="form-group s_website_form_field col-12 s_website_form_custom">
+                            <div class="row s_col_no_resize s_col_no_bgcolor">
+                              <label class="col-form-label col-sm-auto s_website_form_label " style="width: 200px" for="on4xgmlqf1r">
+                                <span class="s_website_form_label_content">Message Details</span>
+                              </label>
+                              <div class="col-sm">
+                                <textarea class="form-control s_website_form_input" name="Message Details" placeholder="Include Make, Model, Year of the vehicle you're shopping for:" id="on4xgmlqf1r" rows="6"/>
+                                <div class="s_website_form_field_description small form-text text-muted">
+                                    Describe your field here.
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                          <div class="form-group s_website_form_field col-12    s_website_form_dnone" data-name="Field">
+                            <div class="row s_col_no_resize s_col_no_bgcolor">
+                              <label class="col-form-label col-sm-auto s_website_form_label " style="width: 200px">
+                                <span class="s_website_form_label_content"/>
+                              </label>
+                              <div class="col-sm">
+                                <input type="hidden" class="form-control s_website_form_input" name="email_to" value="bill@slickwillysparts.com"/>
+                                <div class="s_website_form_field_description small form-text text-muted">
+                                    Separate email addresses with a comma.
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                          <div class="form-group col-12 s_website_form_submit" data-name="Submit Button">
+                            <div style="width: 200px;" class="s_website_form_label"/>
+                            <a href="#" role="button" class="btn btn-primary btn-lg s_website_form_send">Submit</a>
+                            <span id="s_website_form_result"/>
+                          </div>
+                        </div>
+                      </form>
+                    </div>
+                  </section>
+                </div>
+                <!-- <div class="col-lg-4 mt-4 mt-lg-0 o_colored_level" data-original-title="" title="" aria-describedby="tooltip656400">
+                  <ul class="list-unstyled mb-0 pl-2">
+                    <li style="text-align: center;"><img class="img-fluid o_we_custom_image" src="/web/image/430-b5cdfd28/Slick%20Willy%27s%20Logo%20T-Shirt%20Version%5B2305843009215013118%5D.png" alt="" data-original-id="430" data-original-src="/web/image/430-b5cdfd28/Slick%20Willy%27s%20Logo%20T-Shirt%20Version%5B2305843009215013118%5D.png" data-mimetype="image/png" data-original-title="" title="" aria-describedby="tooltip975855" loading="lazy"/>SLICK WILLY'S CLASSIC</li>
+                    <li style="text-align: center;">ROD &amp;amp; TRUCK PARTS<br/></li>
+                    <li>
+                      <i class="fa fa-map-marker fa-fw mr-2"/>
+                      <p>1451 RUTHERFORD ROAD, MARION, NORTH CAROLINA 28752, UNITED STATES</p>
+                      <span class="o_force_ltr"/>
+                    </li>
+                    <li>
+                      <i class="fa fa-phone fa-fw mr-2"/>
+                      <span class="o_force_ltr">+1 
+                      <a href="tel:8285590813">828-559-0813</a><br/></span>
+                    </li>
+                    <li>
+                      <i class="fa fa-1x fa-fw fa-envelope mr-2"/>
+                      <span>
+                        <a href="mailto:info@yourcompany.example.com" data-original-title="" title="">bill@slickwillysparts.com</a>
+                      </span>
+                    </li>
+                  </ul>
+                </div> -->
+              </div>
+            </div>
+          </section>
+
+    </div> 
+  </t>
+
+
+    </template>
+</odoo>

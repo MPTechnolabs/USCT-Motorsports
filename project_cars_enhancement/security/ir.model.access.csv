@@ -1,0 +1,4 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+uom_uom_public_id,uom_uom_public_id,uom.model_uom_uom,,1,0,0,0
+mrp_bom_public_id,mrp_bom_public_id,mrp.model_mrp_bom,,1,0,0,0
+mrp_bom_line_public_id,mrp_bom_line_public_id,mrp.model_mrp_bom_line,,1,0,0,0

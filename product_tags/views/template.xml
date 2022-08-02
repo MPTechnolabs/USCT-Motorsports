@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+	<template id="website_sale_product_inhireted" name="Product Details" inherit_id="website_sale.product">
+	    <xpath expr="//div[@id='product_details']/h1" position="after">
+	        <div t-if="website.product_tag_website" id="product_tags" class="row" style="margin-left: 10px !important;">
+	            <div class="row product_tag_div"  >
+	                <t t-foreach="product_variant.product_tags_ids" t-as="product_tags_id" >
+	                    <div class="product_tag" id="product_tag"><t t-esc="product_tags_id.name"/></div>
+	                </t>
+	               
+	            </div>
+	        </div>
+	    </xpath>
+	</template>
+</odoo>
